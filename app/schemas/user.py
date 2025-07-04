@@ -5,6 +5,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     username: str
     password: str
+    active: bool
 
     @field_validator('password')
     def validate_password(cls, v):
@@ -26,9 +27,21 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserLoginUsername(BaseModel):
+    username: str
+    password: str
+
+
 class UserResponse(BaseModel):
     email: EmailStr
     username: str
+    active: bool
+
+
+class PasswordUpdate(BaseModel):
+    email: EmailStr
+    username: str
+    password: str
 
 
 class TokenResponse(BaseModel):

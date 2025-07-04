@@ -28,6 +28,7 @@ def create_access_token(data: dict):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def get_from_token(token: str):
+def get_email_from_token(token: str):
     info = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+    print(info["sub"])
     return info["sub"]

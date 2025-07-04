@@ -1,39 +1,51 @@
-from app.models.user import fake_users, fake_usernames
-from app.schemas.user import UserRegister, UserResponse
+from sqlalchemy.orm import Session
+from app.schemas import User as schemas
 from app.core.security import verify_password, create_access_token
-from app.core.security import get_password_hash, get_from_token
+from app.core.security import get_password_hash, get_email_from_token
+from app.crud import users as crud
 
 
 class UserService:
-    @staticmethod
-    def register(user: UserRegister):
-        if user.email in fake_users:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def register(self, user: schemas.UserRegister):
+        if crud.get_by_email(self.db, user.email):
             raise ValueError("Email already registered")
 
-        if user.username in fake_usernames:
+        if crud.get_by_username(self.db, user.username):
             raise ValueError("username already registered")
 
         hashed_password = get_password_hash(user.password)
-        fake_users[user.email] = {
-            "email": user.email,
-            "username": user.username,
-            "hashed_password": hashed_password
-        }
-        fake_usernames[user.username] = {
-            "email": user.email,
-            "username": user.username,
-            "hashed_password": hashed_password
-        }
-        return UserResponse(**user.model_dump())
+        user.password = hashed_password
+        return crud.create_user(self.db, user)
 
-    @staticmethod
-    def authenticate(email: str, password: str):
-        user = fake_users.get(email)
-        if not user or not verify_password(password, user["hashed_password"]):
+    # def change_password(
+    #         self,
+    #         email: str,
+    #         old_password: str,
+    #         new_password: str
+    # ):
+    #     user = crud.get_by_email(self.db, email)
+    #     if not user or not verify_password(old_password, user.password):
+    #         raise ValueError("Old password is wrong")
+    #     hashed_new_password = get_password_hash(new_password)
+    #     user.password = hashed_new_password
+    #     return crud.update_password(self.db, user)
+
+    def authenticate(self, email: str, password: str):
+        user = crud.get_by_email(self.db, email)
+        if not user or not verify_password(password, user.password):
             return None
         return create_access_token({"sub": email})
 
-    @staticmethod
-    def info(token: str):
-        user = get_from_token(token)
+    def authenticate_username(self, username: str, password: str):
+        user = crud.get_by_username(self.db, username)
+        if not user or not verify_password(password, user.password):
+            return None
+        return create_access_token({"sub": username})
+
+    def info(self, token: str):
+        email = get_email_from_token(token)
+        user = crud.get_by_email(self.db, email)
         return user
