@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from fastapi.security import OAuth2PasswordBearer
+# from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.schemas import User as schemas
 from app.services.user_service import UserService
@@ -16,16 +16,16 @@ def get_db():
         db.close()
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/login")
 
 
-def get_current_user(
-        token: str = Depends(oauth2_scheme),
-        db: Session = Depends(get_db)
-):
-    service = UserService(db)
-    user = service.info(token)
-    return user
+# def get_current_user(
+#         token: str = Depends(oauth2_scheme),
+#         db: Session = Depends(get_db)
+# ):
+#     service = UserService(db)
+#     user = service.info(token)
+#     return user
 
 
 @router.post("/register", response_model=schemas.UserResponse)
