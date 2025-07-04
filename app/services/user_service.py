@@ -43,7 +43,7 @@ class UserService:
         user = crud.get_by_username(self.db, username)
         if not user or not verify_password(password, user.password):
             return None
-        return create_access_token({"sub": username})
+        return create_access_token({"sub": user.email})
 
     def info(self, token: str):
         email = get_email_from_token(token)
